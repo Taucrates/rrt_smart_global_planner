@@ -1,0 +1,5 @@
+<library path="lib/librrt_smart_global_planner">
+  <class name="RRTsmart_planner/RRTsmartPlannerROS" type="RRTsmart_planner::RRTsmartPlannerROS" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>This is RRT Smart Global Planner Plugin by AnToni Tauler based in RRT Star by Rafael Barreto.</description>
+  </class>
+</library>

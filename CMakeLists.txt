@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(rrt_star_global_planner)
+project(rrt_smart_global_planner)
 
 
 add_compile_options(-std=c++11)
@@ -26,7 +26,7 @@ include_directories(
 #add_library(global_planner_lib src/RRTstar_ros.cpp)
 
 add_library(${PROJECT_NAME}
-   src/RRTstar_ros.cpp
+   src/RRTsmart_ros.cpp
 )
 
 

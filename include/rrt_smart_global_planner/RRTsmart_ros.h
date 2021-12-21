@@ -1,9 +1,8 @@
 /** 
- * Rafael Barreto, 2019
+ * Antoni Tauler, 2021
+   based in RRT star by Rafael Barreto, 2019
  *
 */
-
-
 
 /** include ROS libraries **/
 #include <ros/ros.h>
@@ -30,69 +29,68 @@
 
 using std::string;
 
-#ifndef RRTSTAR_ROS_CPP
-#define RRTSTAR_ROS_CPP
+#ifndef RRTSMART_ROS_CPP
+#define RRTSMART_ROS_CPP
 
 /**
  * @brief Node struct
  * 
 */
-struct Node {
-	float x;
+struct Node
+{
+  float x;
   float y;
   int node_id;
-	int parent_id;
+  int parent_id;
   float cost;
-  
-  bool operator ==(const Node& node) 
+
+  bool operator==(const Node &node)
   {
-	  return (x == node.x) && (y == node.y) && (node_id == node.node_id) && (parent_id == node.parent_id) && (cost == node.cost) ;
+    return (x == node.x) && (y == node.y) && (node_id == node.node_id) && (parent_id == node.parent_id) && (cost == node.cost);
   }
 
-  bool operator !=(const Node& node) 
+  bool operator!=(const Node &node)
   {
-    if((x != node.x) || (y != node.y) || (node_id != node.node_id) || (parent_id != node.parent_id) || (cost != node.cost))
+    if ((x != node.x) || (y != node.y) || (node_id != node.node_id) || (parent_id != node.parent_id) || (cost != node.cost))
       return true;
     else
       return false;
   }
-}; 
+};
 
-
-namespace RRTstar_planner 
+namespace RRTsmart_planner
 {
 
-  class RRTstarPlannerROS : public nav_core::BaseGlobalPlanner 
+  class RRTsmartPlannerROS : public nav_core::BaseGlobalPlanner
   {
 
-    public:
-      /**
+  public:
+    /**
       * @brief Default constructor of the plugin
       */
-      RRTstarPlannerROS();
+    RRTsmartPlannerROS();
 
+    RRTsmartPlannerROS(std::string name, costmap_2d::Costmap2DROS *costmap_ros);
 
-      RRTstarPlannerROS(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
-
-      /**
+    /**
       * @brief  Initialization function for the PlannerCore object
       * @param  name The name of this planner
       * @param  costmap_ros A pointer to the ROS wrapper of the costmap to use for planning
       */
-      void initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
+    void initialize(std::string name, costmap_2d::Costmap2DROS *costmap_ros);
 
-      /**
+    /**
        * @brief Given a goal pose in the world, compute a plan
        * @param start The start pose
        * @param goal The goal pose
        * @param plan The plan... filled by the planner
        * @return True if a valid plan was found, false otherwise
        */
-      bool makePlan(const geometry_msgs::PoseStamped& start,
-                    const geometry_msgs::PoseStamped& goal,
-                    std::vector<geometry_msgs::PoseStamped>& plan);
-      
-      /*
+    bool makePlan(const geometry_msgs::PoseStamped &start,
+                  const geometry_msgs::PoseStamped &goal,
+                  std::vector<geometry_msgs::PoseStamped> &plan);
+
+    /*
       * @brief Compute the euclidean distance (straight-line distance) between two points
       * @param px1 point 1 x
       * @param py1 point 1 y
@@ -100,31 +98,33 @@ namespace RRTstar_planner
       * @param py2 point 2 y
       * @return the distance computed
       */
-      float distance(float px1, float py1, float px2, float py2);
+    float distance(float px1, float py1, float px2, float py2);
 
-      /**
+    /**
        * @brief it randomly samples a point in the free space of the plan
        * @return the a random point in the free space of the cartesian plane considered 
       */
-      std::pair<float, float> sampleFree();
+    std::pair<float, float> sampleFree();
 
-      /**
+    std::pair<float, float> sampleFreeBeacon(std::vector<std::pair<float, float>> center_beacon, float bias_radius, int beacon);
+
+    /**
        * @brief Check if there is a collision at the world point (wx, wy)
        * @param wx world x coordinate (cartesian system)
        * @param wy world y coordinate (cartesian system)
        * @return True is the point collides and false otherwise
       */
-      bool collision(float wx, float wy);
+    bool collision(float wx, float wy);
 
-      /**
+    /**
        * @brief Given the nodes set and an point the function returns the closest node of the node
        * @param nodes the set of nodes
        * @param p_rand the random point (x,y) in the plane
        * return the closest node
       */
-      Node getNearest(std::vector<Node> nodes, std::pair<float, float> p_rand);
+    Node getNearest(std::vector<Node> nodes, std::pair<float, float> p_rand);
 
-      /**
+    /**
        * @brief Select the best parent. Check if there is any node around the newnode with cost less than its parent node cost. 
        * If yes choose this less cost node as the new parent of the newnode.
        * @param nn the parent of the newnode
@@ -133,9 +133,9 @@ namespace RRTstar_planner
        * @return the same newnode with the best parent node
        * 
       */
-      Node chooseParent(Node nn, Node newnode, std::vector<Node> nodes);
+    Node chooseParent(Node nn, Node newnode, std::vector<Node> nodes);
 
-      /*
+    /*
       * @brief The function checks if the cost of the parents of all nodes around is still less than the newnode. 
       * If there is a node with parent with higher cost the new parent of this node is the newnode now.
       * 
@@ -143,9 +143,9 @@ namespace RRTstar_planner
       * @param newnode the newnode
       * @return the nodes set rewired
       */
-      std::vector<Node> rewire(std::vector<Node> nodes, Node newnode);
+    std::vector<Node> rewire(std::vector<Node> nodes, Node newnode);
 
-      /*
+    /*
        * @brief The function generate the new point between the epsilon_min and epsilon_max along the line p_rand and nearest node. 
        *        This new point is a node candidate. It will a node if there is no obstacles between its nearest node and itself.
        * @param px1 point 1 x
@@ -154,11 +154,13 @@ namespace RRTstar_planner
        * @param py2 point 2 y
       * @return the new point
       */
-      std::pair<float, float> steer(float x1, float y1, float x2, float y2);
+    std::pair<float, float> steer(float x1, float y1, float x2, float y2);
 
-      bool obstacleFree(Node node_nearest, float px, float py);
+    bool obstacleFree(Node node_nearest, float px, float py);
 
-      /**
+    bool obstacleFreeSmart(float px1, float py1, float px2, float py2);
+
+    /**
        * @brief Check if the distance between the goal and the newnode is less than the GOAL_RADIUS. If yes the newnode is the goal.
        * @param px1 point 1 x
        * @param py1 point 1 y
@@ -166,48 +168,50 @@ namespace RRTstar_planner
        * @param py2 point 2 y
        * *@return True if distance is less than the xy tolerance (GOAL_RADIUS), False otherwise
       */
-      bool pointCircleCollision(float x1, float y1, float x2, float y2, float radius);
+    bool pointCircleCollision(float x1, float y1, float x2, float y2, float radius);
 
-      float XDIM;
-      float YDIM;
-      int MAX_NUM_NODES;
-      float RADIUS;
-      float GOAL_RADIUS;
-      float epsilon_min;
-      float epsilon_max;
-    protected:
+    std::vector<std::pair<float, std::pair<float, float>>> visibleNodes(std::vector<std::pair<float, std::pair<float, float>>> RRT_Star_Path);
 
-      /**
+    float XDIM;
+    float YDIM;
+    int MAX_NUM_NODES;
+    int MIN_NUM_NODES;
+    int iterations;
+    float old_cost;
+    float RADIUS;
+    float GOAL_RADIUS;
+    float epsilon_min;
+    float epsilon_max;
+
+  protected:
+    /**
       * @brief Store a copy of the current costmap in \a costmap.  Called by makePlan.
       */
-      costmap_2d::Costmap2D* costmap_;
-      costmap_2d::Costmap2DROS* costmap_ros_;
-      std::string frame_id_;
-      ros::Publisher plan_pub_;
-      
-      // TODO
-      //allow_unknown_;
+    costmap_2d::Costmap2D *costmap_;
+    costmap_2d::Costmap2DROS *costmap_ros_;
+    std::string frame_id_;
+    ros::Publisher plan_pub_;
 
-    private:
-      /** 
+    // TODO
+    //allow_unknown_;
+
+  private:
+    /** 
        * @brief Convert from Map (matrix type) coordinates (mx = column and my = row) to World
        */
-      void mapToWorld(int mx, int my, float& wx, float& wy);
-      
-      /** 
+    void mapToWorld(int mx, int my, float &wx, float &wy);
+
+    /** 
        * @brief Convert from Map (matrix type) coordinates (mx = column and my = row) to World
        */
-      void worldToMap(float wx, float wy, int& mx, int& my);
+    void worldToMap(float wx, float wy, int &mx, int &my);
 
-      float originX;
-      float originY;
-      float resolution;
-      //double step_size_, min_dist_from_robot_;
-      //base_local_planner::WorldModel* world_model_;
-      bool initialized_;
-      int width;
-      int height;
-
+    float originX;
+    float originY;
+    float resolution;
+    bool initialized_;
+    int width;
+    int height;
   };
-}; // RRTstar_planner namespace
+}; // RRTsmart_planner namespace
 #endif
